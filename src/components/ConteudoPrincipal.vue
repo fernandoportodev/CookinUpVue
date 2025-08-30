@@ -1,35 +1,51 @@
 <script lang="ts">
+import MostrarReceitas from './MostrarReceitas.vue';
 import SelecionarIngredientes from './SelecionarIngredientes.vue';
+import SuaLista from './SuaLista.vue';
+import Tag from './Tag.vue';
+
+type Pagina = 'SelecionarIngredientes' | 'MostrarReceitas';
 
 export default {
-    components: { SelecionarIngredientes },
+    components: { SelecionarIngredientes, SuaLista, Tag, MostrarReceitas },
     data() {
-        return {
-            ingredientes: ['Alho', 'Manteiga', 'Orégano']
-        }
+      return {
+        ingredientes: [] as string[],
+        conteudo: 'SelecionarIngredientes' as Pagina
+      };
+    },
+    methods: {
+      adicionarIngrediente(ingrediente: string) {
+        this.ingredientes.push(ingrediente)
+      },
+
+      removerIngrediente(ingrediente: string) {
+        this.ingredientes = this.ingredientes.filter(iLista => ingrediente !== iLista);
+      },
+      
+      navegar(pagina: Pagina) {
+        this.conteudo = pagina;
+      }
     }
-}
+  }
 </script>
 
 <template>
     <main class="conteudo-principal">
-        <section>
-            <span class="subtitulo-lg sua-lista-texto">
-                Sua lista:
-            </span>
+        <SuaLista :ingredientes="ingredientes"/>
+        <KeepAlive include="SelecionarIngredientes">
+          <SelecionarIngredientes v-if="conteudo === 'SelecionarIngredientes'"
+          @adicionar-ingrediente="adicionarIngrediente"
+          @remover-ingrediente="removerIngrediente"
+          @buscar-receitas="navegar('MostrarReceitas')"
+          />
 
-            <ul v-if="ingredientes.length" class="ingredientes-sua-lista">
-                <li v-for="ingrediente in ingredientes" :key="ingrediente" class="ingrediente">
-                    {{ ingrediente }}
-                </li>
-            </ul>
-
-            <p v-else class="paragrafo lista-vazia">
-                <img src="../assets/images/icones/lista-vazia.svg" alt="Ícone de pesquisa">
-                Sua lista está vazia, selecione ingredientes para iniciar.
-            </p>
-        </section>
-        <SelecionarIngredientes />
+          <MostrarReceitas 
+          v-else-if="conteudo === 'MostrarReceitas'"
+          @editar-receitas="navegar('SelecionarIngredientes')"
+          :ingredientes="ingredientes" 
+          />
+        </KeepAlive>
     </main>
 </template>
 
